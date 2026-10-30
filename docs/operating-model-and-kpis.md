@@ -1,48 +1,24 @@
-# 6. Operating model and KPIs
+# Ownership and measures — four-technology remediation
 
-## Accountability
+## Ownership
 
-| Role | Accountability |
+| Technology/work | Accountable team |
 |---|---|
-| Enterprise/Solution Architecture | Target architecture, integration patterns, guardrails and design decisions |
-| Security/Vulnerability Management | Advisory validation, risk policy, exploit context and prioritisation |
-| Cloud/Platform Operations | Asset inventory, platform patching and runtime evidence |
-| Application/Product Owner | Application dependencies, testing, release and service acceptance |
-| DevSecOps/Platform Engineering | CI/CD, SBOM, image rebuild, deployment automation |
-| ITSM/Change Management | Assignment, approvals, SLA, exceptions and audit trail |
-| Business Service Owner | Business criticality, outage trade-offs and risk acceptance |
+| PHP runtime and PHP-FPM | Application/platform owner |
+| GitLab Self-Managed | GitLab platform administrator |
+| Node.js runtime and images | Application/platform engineering |
+| NGINX package, modules and configuration | Web/platform operations |
+| Advisory applicability and risk | Security team |
+| Change approval and service acceptance | Service owner / change authority |
 
-## Core KPIs
+## Measures
 
-| KPI | Definition |
-|---|---|
-| Asset coverage | In-scope assets with current inventory ÷ total in-scope assets |
-| Owner coverage | Assets with accountable owner ÷ total in-scope assets |
-| Advisory correlation time | Time from advisory intake to affected asset list |
-| Mean time to assign | Time from confirmed exposure to accountable assignment |
-| Mean time to remediate | Time from confirmed exposure to verified fix |
-| Verified closure rate | Closed findings with required evidence ÷ all closed findings |
-| Reopen rate | Findings reopened after failed validation or recurrence |
-| Exception ageing | Age and count of approved, unexpired exceptions |
-| Repeat vulnerability rate | Recurrence of same component issue after remediation |
+- **Inventory coverage:** known instances compared with expected deployment sources.
+- **Unknown-version count:** instances whose version or configuration could not be established.
+- **Time to identify:** advisory publication/intake to affected-instance list.
+- **Time to assign:** confirmed finding to accountable owner.
+- **Time to remediate:** confirmed finding to deployed fix or approved mitigation.
+- **Verified closure:** findings with post-change version/configuration and health evidence.
+- **Reopen rate:** findings that remain affected or recur after closure.
 
-## Reporting principles
-
-- Segment by severity, exploit status, environment and business criticality.
-- Show numerator, denominator, time window and data freshness.
-- Separate confirmed exposure from potential matches.
-- Separate patched, mitigated, accepted and not-applicable states.
-- Do not count a ticket as closed until verification passes.
-- Publish trends and bottlenecks, not only point-in-time totals.
-
-## Governance
-
-Every exception must include:
-- Affected assets and service.
-- Risk rationale.
-- Named accountable owner and approver.
-- Compensating controls.
-- Remediation plan and target date.
-- Expiry date and review cadence.
-
-The objective is not to maximise the number of tickets closed. It is to reduce verified exposure while preserving service reliability.
+Report PHP, GitLab, Node.js and NGINX separately. Show the reporting window, source freshness and denominator. A ticket closure without running-state evidence is not verified remediation.
