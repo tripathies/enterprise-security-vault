@@ -1,121 +1,65 @@
-# 3. Automation reference architecture
+# Automation workflow — four technology security response
 
-## Automation goal
+## Goal
 
-Move from manual advisory review and ticket creation to a controlled closed-loop process:
+Automate the repetitive work for PHP, GitLab, Node.js and NGINX: discovery, version comparison, ticket creation, approved remediation and verification.
 
-**Identify → Correlate → Prioritise → Assign → Remediate → Verify → Monitor**
+## Workflow
 
-Automation should accelerate repeatable work, not bypass production governance.
+1. Run on a schedule and when a new relevant advisory is added.
+2. Query approved host, cloud, container and platform inventories.
+3. Discover PHP, GitLab Self-Managed, Node.js and NGINX instances.
+4. Collect version, asset ID, environment, owner and last-seen time.
+5. For NGINX, collect relevant package/build, module and configuration evidence.
+6. Compare each instance against the current vendor advisory and fixed release guidance.
+7. Mark each record as `affected`, `not_affected`, `needs_review` or `unknown`.
+8. Group findings by service/owner and create or update remediation tickets.
+9. Route approved changes to the existing patching or CI/CD process.
+10. Verify the deployed runtime/package/configuration and service health.
+11. Close only when the evidence passes; otherwise reopen or escalate.
 
-## Event-driven workflow
+## Suggested automation components
 
-```mermaid
-flowchart TD
-  A[New vendor advisory] --> B[Ingest and normalise]
-  B --> C[Validate source and affected versions]
-  C --> D[Enrich CVE / exploit intelligence]
-  D --> E[Query CMDB, cloud, SBOM, registry and runtime]
-  E --> F{Exposure confirmed?}
-  F -->|No| G[Record no-match with evidence and rescan schedule]
-  F -->|Yes| H[Calculate contextual risk]
-  H --> I[Create or update remediation work item]
-  I --> J[Select approved runbook]
-  J --> K{Production change?}
-  K -->|Yes| L[Change approval]
-  K -->|No| M[Execute in permitted environment]
-  L --> M
-  M --> N[Post-deployment validation]
-  N --> O{All acceptance checks pass?}
-  O -->|Yes| P[Store evidence and close]
-  O -->|No| Q[Rollback / mitigate / escalate]
-  Q --> I
-  P --> R[Continuous reconciliation]
+| Function | Possible implementation |
+|---|---|
+| Scheduling | GitHub Actions schedule, enterprise scheduler or cloud event service |
+| Inventory | CMDB, cloud inventory, endpoint management, Kubernetes and registry APIs |
+| Discovery | Approved remote inventory agents and platform APIs |
+| Advisory data | Maintained vendor advisory records and security feeds |
+| Comparison | Version-aware rules with package-specific backport handling |
+| Workflow | Existing ITSM API |
+| Execution | Existing patch management, configuration management or CI/CD |
+| Verification | Runtime/package query, configuration test, service health and post-patch scan |
+| Reporting | CSV/JSON output and security dashboard |
+
+These are implementation options, not a requirement to deploy every product.
+
+## Safe automation rules
+
+- Discovery and reporting may run automatically.
+- Production patching must follow the organisation's change policy.
+- Test the upgrade in a lower environment first.
+- Use least-privilege credentials and short-lived identity.
+- Make jobs idempotent; repeated runs must not create duplicate tickets or repeat unsafe changes.
+- Record source advisory, asset, before/after version, operator/workflow, change ID, timestamp and validation result.
+- Define rollback or mitigation before production execution.
+- Do not treat unknown inventory or failed discovery as not affected.
+
+## Example output record
+
+```json
+{
+  "technology": "Node.js",
+  "asset_id": "service-prod-001",
+  "environment": "production",
+  "observed_version": "REPLACE_WITH_DISCOVERED_VERSION",
+  "advisory_id": "REPLACE_WITH_VENDOR_ADVISORY",
+  "assessment": "needs_review",
+  "owner": "platform-team",
+  "ticket": null,
+  "verification": "pending",
+  "last_seen_utc": "REPLACE_WITH_TIMESTAMP"
+}
 ```
 
-## Trigger sources
-
-- Vendor advisory feed or webhook.
-- CVE/NVD update.
-- CISA Known Exploited Vulnerabilities catalogue update.
-- Scheduled vulnerability scan.
-- New SBOM or container image.
-- New cloud asset or runtime deployment.
-- Policy violation or expired exception.
-
-## Automation stages
-
-### 1. Ingest and normalise
-Capture advisory ID, CVE, vendor, product, affected versions, fixed versions, severity, configuration conditions, source URL and timestamps. Preserve raw source data.
-
-### 2. Correlate
-Match product/package identifiers and version ranges against:
-- CMDB and cloud asset inventory.
-- SBOM and package manifests.
-- Container registry image layers.
-- Runtime/package telemetry.
-- Kubernetes workload and node inventory.
-- CI/CD build and deployment metadata.
-
-Use version-aware package matching. Account for vendor backports and distribution package revisions.
-
-### 3. Prioritise
-Generate an explainable risk record. Example dimensions:
-- Severity.
-- Known exploitation.
-- External reachability.
-- Privilege and blast radius.
-- Business criticality.
-- Code-path applicability.
-- Compensating controls.
-
-A score must not hide the underlying evidence or override mandatory policy.
-
-### 4. Create accountable work
-Create or update ITSM work with affected assets, service owner, risk rationale, recommended fix, required evidence, target date and escalation path. Deduplicate by advisory + affected component + service/deployment group.
-
-### 5. Select remediation path
-- VM/package: approved OS/package patch orchestration.
-- Container: rebuild from fixed base/dependency, scan, sign and redeploy.
-- Kubernetes: update workload image/node/runtime through controlled rollout.
-- Application dependency: update lockfile, test, build and deploy.
-- Managed runtime: apply provider-supported runtime update or migration.
-- Unsupported/EOL: migrate, isolate, disable exposure or document approved exception.
-
-### 6. Guarded execution
-- Use least-privilege workload identity.
-- Test in non-production first.
-- Run unit, integration, security and health checks.
-- Use canary/rolling deployment where appropriate.
-- Require human change approval for high-impact production changes.
-- Provide rollback or mitigation path.
-
-### 7. Verify closure
-A ticket is not proof of remediation. Require:
-- Running asset identity and timestamp.
-- Installed package/runtime version or immutable image digest.
-- Successful rollout/health result.
-- Relevant post-change scan.
-- Change record and approver where required.
-- Evidence link and final status.
-
-## Automation safety controls
-
-| Control | Required behaviour |
-|---|---|
-| Idempotency | Reprocessing the same event must not create duplicate work or repeat unsafe actions |
-| Approval | Production change gates follow risk and change policy |
-| Scope | Enforce account, subscription, project and environment boundaries |
-| Secrets | Use managed identity/short-lived credentials |
-| Rate limiting | Protect APIs and production systems |
-| Retry | Exponential backoff and bounded retry |
-| Failure handling | Dead-letter queue and owner notification |
-| Rollback | Defined rollback/mitigation before execution |
-| Audit | Record actor, policy, action, result and evidence |
-| Exceptions | Named approver, rationale, compensating control and expiry |
-
-## Human-in-the-loop boundaries
-
-Automate discovery, correlation, enrichment, prioritisation recommendations, ticket routing, test execution and evidence collection.
-
-Require explicit approval where an action may disrupt production, change a critical service, affect regulated data, or alter shared infrastructure. Never auto-disable or take an entire service offline based only on an unverified CVE match.
+This is a schema example, not a real finding. Populate advisory IDs and fixed versions from current official vendor records.
