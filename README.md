@@ -1,7 +1,7 @@
 # Security Architecture Playbook
 
 <p align="center">
-  <img src="security-architecture-playbook-cover.svg" alt="Security Architecture Playbook — defence-in-depth reference architecture" width="100%" />
+  <img src="assets/security-architecture-playbook-cover.svg" alt="Security Architecture Playbook — defence-in-depth reference architecture" width="100%" />
 </p>
 
 **Four technologies. One focused problem. One repeatable remediation workflow.**
