@@ -1,8 +1,8 @@
-# PHP · GitLab · Node.js · NGINX Security Response
+# Security Architecture Playbook
 
-**Four technologies. One focused problem. One repeatable remediation workflow.**
+<p align="center">\n  <img src="security-architecture-playbook-cover.svg" alt="Security Architecture Playbook — defence-in-depth reference architecture" width="100%" />\n</p>\n\n**Four technologies. One focused problem. One repeatable remediation workflow.**
 
-This repository documents a practical response to the security advisories highlighted for **PHP, GitLab, Node.js and NGINX**. It is deliberately limited to these four technologies—not a generic enterprise vulnerability-management framework.
+This focused Security Vault documents a practical response to security advisories affecting **PHP, GitLab, Node.js and NGINX**. It is a targeted remediation playbook, not a claim to cover every enterprise security domain. It is deliberately limited to these four technologies—not a generic enterprise vulnerability-management framework.
 
 ## 1. Problem statement
 
